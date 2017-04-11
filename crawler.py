@@ -23,7 +23,9 @@ intervalTimeBetweenCheck = 0
 # read config json from path
 def get_config(config):
     with open(config, 'r') as f:
-        return json.loads(f.read())
+        # handle '// ' to json string
+        input_str = re.sub(r'// .*\n', '\n', f.read())
+        return json.loads(input_str)
 
 # add some arguments 
 def parse_args():
@@ -55,7 +57,7 @@ def main():
         itemIndex = 1
         for item in copy(items):
             # url to parse
-            item_page_url = urlparse.urljoin(config['base_url'], item[0])
+            item_page_url = urlparse.urljoin(config['amazon-base_url'], item[0])
             print('[#%02d] Checking price for %s (target price: %s)' % ( itemIndex, item[0], item[1]))
 
             itemIndex += 1
@@ -65,9 +67,12 @@ def main():
             nowtime = datetime.now()
             thisIntervalTime = intervalTimeBetweenCheck + random.randint(0,150)
 
+
+            
+            
             #calculate next triggered time
             dt = datetime.now() + timedelta(seconds=thisIntervalTime)
-            print('Sleeping for %d seconds, next start at %s' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
+            print('Sleeping for %d seconds, next time start at %s' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
             time.sleep(thisIntervalTime)
         else:
             break
