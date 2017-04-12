@@ -1,6 +1,6 @@
 # Amazon-Price-Alert
 
-![](./IMAGES/ICON.PNG)
+![](./images/icon.png)
 This script will send you an email when the price for specific items you followed on Amazon drops beneath a certain price you set.
 
 
@@ -20,10 +20,54 @@ This script will send you an email when the price for specific items you followe
 ## Config file
 Put *config.json* in same folder as code, or you can configure the path by '-c' argument
 
-There are
-### how can I get my item ID from Amazon?
+![](./images/json.png)
+
+#### default-internal-time
+Sleep time between each check (seconds)
+
+#### email
+- sender : sender Google mail account
+- sender-password : sender Google mail account password 
+- receivers : receivers' mail, you can add as much as you want
+ 
+Remember to close the setting of [Less Secure Apps](https://www.google.com/settings/security/lesssecureapps)
 
 
+#### amazon-base url
+Get url from your amazon of you location. For example : URL of Amazon JP is `https://www.amazon.co.jp/dp/`
+ 
+
+#### item-to-parse
+You need to put item ID and expected price here.
+
+
+
+
+### how can I get item ID from Amazon?
+
+### Why my script can't get price from Amazon?
+There may be two problem of it.
+
+1.Your ip was banned by Amazon
+
+	Change your IP or wait for unban.
+
+
+2.The item selector changed
+
+
+### How to change selector? 
+#### Step 1.
+Search your item and go into the item page.
+
+Example item: Nintendo Switch
+![](./images/st1.png)
+#### Step 2.
+Use your mouse and right click on the price text and choose inpector
+![](./images/st2.png)
+#### Step 3.
+Use your mouse and right click on the price text and choose inpector
+![](./images/st2.png)
 ## Email Layout
 Server will send 3 kinds of mails to receiver
 
@@ -37,9 +81,9 @@ Server will send 3 kinds of mails to receiver
 	Server shutdown mail for reminding you to restart. Most reason of the problem is the server banned by Amazon. You can restart it after 30 minutes.
 	
 2. **Price dropped mail**
-	When the price of item you followed drop beneath your expected price, server will send notified mail to you.
+	You can 
 	
-	![](./images/mail-1.png)
+	![](./images/mail-3.png)
 	
 
 ## Limitation
