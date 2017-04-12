@@ -151,6 +151,7 @@ def main():
     # get config from path
     config = get_config(args.config)
     emailinfo = config['email']
+    intervalTimeBetweenCheck = config['default-internal-time']
 
     #get all items to parse
     items = config['item-to-parse']

@@ -1,15 +1,22 @@
 {
+    // time between each check (seconds)
+    "default-internal-time":20,
     "email": {
-
-        
         "smtp_url": "smtp.gmail.com:587",
+        // sender gmail
         "sender": "sender-mail-address",
-        "sender-spassword": "password",
-        "receiver": ["receiver-mail-address-1","receiver-mail-address-2","littlesocks@gmail.com"]
+        "sender-password": "password",
+        // receivers emails (can be mutiple)
+        "receivers": ["receiver-mail-address-1","receiver-mail-address-2","littlesocks@gmail.com"]
     },
+    // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
-    "xpath_selector": "//*[@id='priceblock_ourprice']",
+    "xpath_selector" : {
+        "price": "//*[@id='priceblock_ourprice']",
+        "productname": "//span[@id='productTitle']"
+    },
     "item-to-parse": [
+        // item id , your expected price, productname(optional)
         ["B01NCXFWIZ", 33500,"product name"],
         ["B01NCXFWIZ", 33500,"Nintendo Switch Joy-Con (L) ネオンブルー/ (R) ネオンレッド"]
     ]
