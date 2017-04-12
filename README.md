@@ -14,7 +14,7 @@ This script will send you an email when the price for specific items you followe
 ## Config file
 Put *config.json* in same folder as code, or you can configure the path by '-c' argument
 
-###how can I get my item ID from Amazon?
+### how can I get my item ID from Amazon?
 
 
 ## Email Layout
@@ -36,10 +36,10 @@ Server will send 3 kinds of mails to receiver
 	
 
 ## Limitation
-####Checking interval time limitation
+#### Checking interval time limitation
 This code use some skill preventing banned by Amazon. However, the best interval time between each time of price checking is around 15 minutes.
 
-####Google mail account security
+#### Google mail account security
 [Less Secure Apps](https://www.google.com/settings/security/lesssecureapps)
 
 Using Google smtp server to send mail, you need to enable less secure apps in your account for using it.
