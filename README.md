@@ -1,7 +1,13 @@
 # Amazon-Price-Alert
+
+![](./IMAGES/ICON.PNG)
 This script will send you an email when the price for specific items you followed on Amazon drops beneath a certain price you set.
 
+
 **You can parse the price without Amazon API !**
+
+
+
 
 
 ## Installation
@@ -14,6 +20,7 @@ This script will send you an email when the price for specific items you followe
 ## Config file
 Put *config.json* in same folder as code, or you can configure the path by '-c' argument
 
+There are
 ### how can I get my item ID from Amazon?
 
 
