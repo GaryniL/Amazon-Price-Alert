@@ -57,10 +57,10 @@ You need to put item ID and expected price here.
 Search your item and go into the item page.
 
 Example item: Nintendo Switch
-![](./images/st4.png)
+![](./images/st1.png)
 #### Step 2.
 You can find the item id in the url
-
+![](./images/st4.png)
 
 ### Why my script can't get price from Amazon?
 There may be two problem of it.
