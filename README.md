@@ -14,6 +14,16 @@ This script will send you an email when the price for specific items you followe
 ## Installation
 `pip install -r requirements.txt`
 
+Then you need to edit the config.json first,
+
+	1. email → sender, sender-password, receivers
+	2. amazon-base_url (change to amazon store where your target item is)
+	3. item-to-parse (add item id which you want to track)
+
+
+After installed required package and finished config.json, you can use it by
+`python crawler.py`
+
 ## Required Accounts
 ```text
 1. Google Mail
@@ -42,9 +52,15 @@ Get url from your amazon of you location. For example : URL of Amazon JP is `htt
 You need to put item ID and expected price here.
 
 
-
-
 ### how can I get item ID from Amazon?
+#### Step 1.
+Search your item and go into the item page.
+
+Example item: Nintendo Switch
+![](./images/st4.png)
+#### Step 2.
+You can find the item id in the url
+
 
 ### Why my script can't get price from Amazon?
 There may be two problem of it.

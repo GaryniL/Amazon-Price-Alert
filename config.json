@@ -7,7 +7,7 @@
         "sender": "sender-mail-address",
         "sender-password": "password",
         // receivers emails (can be mutiple)
-        "receivers": ["receiver-mail-address-1","receiver-mail-address-2","littlesocks@gmail.com"]
+        "receivers": ["receiver-mail-address-1","receiver-mail-address-2"]
     },
     // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
@@ -17,7 +17,6 @@
     },
     "item-to-parse": [
         // item id , your expected price, productname(optional)
-        ["B01NCXFWIZ", 33500,"product name"],
         ["B01NCXFWIZ", 33500,"Nintendo Switch Joy-Con (L) ネオンブルー/ (R) ネオンレッド"]
     ]
 }
