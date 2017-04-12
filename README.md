@@ -1,6 +1,7 @@
 # Amazon-Price-Alert
 
 ![](./images/icon.png)
+
 This script will send you an email when the price for specific items you followed on Amazon drops beneath a certain price you set.
 
 
@@ -66,8 +67,8 @@ Example item: Nintendo Switch
 Use your mouse and right click on the price text and choose inpector
 ![](./images/st2.png)
 #### Step 3.
-Use your mouse and right click on the price text and choose inpector
-![](./images/st2.png)
+You will see the selector id of price text in the inspector window
+![](./images/st3.png)
 ## Email Layout
 Server will send 3 kinds of mails to receiver
 
