@@ -19,6 +19,53 @@ from datetime import date, datetime, timedelta
 
 ua = UserAgent.UserAgent()
 intervalTimeBetweenCheck = 0
+dateIndex = datetime.now()
+emailinfo = {}
+
+# msg_content format
+# msg_content['Subject'] = 'Subject'
+# msg_content['Content'] = 'This is a content'
+def send_email(msg_content):
+    global emailinfo
+
+    try:
+        # Try to login smtp server
+        s = smtplib.SMTP("smtp.gmail.com:587")
+        s.ehlo()
+        s.starttls()
+        s.login(emailinfo['sender'], emailinfo['sender-password'])
+    except smtplib.SMTPAuthenticationError:
+        # Log in failed
+        print smtplib.SMTPAuthenticationError
+        print('[Mail]\tFailed to login')
+    else:
+        # Log in successfully
+        print('[Mail]\tLogged in! Composing message..')
+
+        for receiver in emailinfo['receivers']:
+
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = msg_content['Subject']
+            msg['From'] = emailinfo['sender']
+            msg['To'] = receiver
+            
+            text = msg_content['Content']
+
+            part = MIMEText(text, 'plain')
+            msg.attach(part)
+            s.sendmail(emailinfo['sender'], receiver, msg.as_string())
+            print('[Mail]\tMessage has been sent to %s.' % (receiver))
+
+
+def checkDayAndSendMail():
+    todayDate = datetime.now()
+    start = datetime(todayDate.year, todayDate.month, todayDate.day)
+    end = start + timedelta(days=1)
+    global dateIndex
+    print "==>",dateIndex," ",start
+    if dateIndex < end :
+        dateIndex = end
+        print "==>>>>>>",dateIndex
 
 # read config json from path
 def get_config(config):
@@ -42,9 +89,14 @@ def main():
     #set up arguments
     args = parse_args()
     intervalTimeBetweenCheck = args.poll_interval
-    
+    global dateIndex
+    global emailinfo
+
+    dateIndex = datetime.now()
+
     # get config from path
     config = get_config(args.config)
+    emailinfo = config['email']
 
     #get all items to parse
     items = config['item-to-parse']
@@ -54,6 +106,9 @@ def main():
         nowtime_Str = nowtime.strftime('%Y-%m-%d %H:%M:%S')
         print ('[%s] Start Checking' % (nowtime_Str))
 
+        # send mail notify system working everyday
+        checkDayAndSendMail()
+
         itemIndex = 1
         for item in copy(items):
             # url to parse
@@ -61,19 +116,21 @@ def main():
             print('[#%02d] Checking price for %s (target price: %s)' % ( itemIndex, item[0], item[1]))
 
             itemIndex += 1
-
+            print dateIndex
         if len(items):
             # time interval add some random number for preventing banning
             nowtime = datetime.now()
             thisIntervalTime = intervalTimeBetweenCheck + random.randint(0,150)
 
+            # msg_content = {}
+            # msg_content['Subject'] = 'Subject'
+            # msg_content['Content'] = 'This is a content'
+            # send_email(msg_content)
 
-            
-            
             #calculate next triggered time
             dt = datetime.now() + timedelta(seconds=thisIntervalTime)
-            print('Sleeping for %d seconds, next time start at %s' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
-            time.sleep(thisIntervalTime)
+            print('Sleeping for %d seconds, next time start at %s\n' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
+            time.sleep(20)
         else:
             break
 
