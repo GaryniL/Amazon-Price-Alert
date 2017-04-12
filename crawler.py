@@ -73,6 +73,54 @@ def checkDayAndSendMail():
         send_email(msg_content)
 
 
+
+
+def get_price(url, selector):
+    
+    # set random user agent prevent banning
+    r = requests.get(url, headers={
+        'User-Agent':
+            ua.random(),
+        'Accept-Language':    'zh-tw',
+        'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Connection':'keep-alive',
+        'Accept-Encoding':'gzip, deflate'
+    })
+    r.raise_for_status()
+    tree = html.fromstring(r.text)
+
+    
+
+    # find product name
+    productName = ""
+    productName_results = tree.xpath(selector['productname'])
+    if not productName_results:
+        # raise Exception("Product Name does not exist")
+        print('Didn\'t find the \'product-name\' element, trying again later...')
+    else :
+        productName = productName_results[0].text
+        productName = productName.strip()
+
+    # find Price
+    try:
+        # extract the price from the string
+        price_string = re.findall('\d+.\d+', tree.xpath(selector['price'])[0].text)[0]
+        return float(price_string.replace(',', '')),productName
+    
+    except IndexError, TypeError:
+        print('Didn\'t find the \'price\' element, trying again later...')
+        
+        # be banned, send mail then shut down
+        # send mail notifying server shutdown
+        msg_content = {}
+        msg_content['Subject'] = '[Amazon Price Alert] Server shutdown !'
+        msg_content['Content'] = 'Amazon Price Alert shutdown at %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
+        send_email(msg_content)
+        return 0,productName
+
+
+
+
 # read config json from path
 def get_config(config):
     with open(config, 'r') as f:
@@ -121,8 +169,11 @@ def main():
             item_page_url = urlparse.urljoin(config['amazon-base_url'], item[0])
             print('[#%02d] Checking price for %s (target price: %s)' % ( itemIndex, item[0], item[1]))
 
-            price = random.randint(33400,33600)
+            # get price and product name
             productName = item[2]
+            price,productName = get_price(item_page_url, config['xpath_selector'])
+            
+            
             # Check price lower then you expected
             if not price:
                 continue
@@ -131,7 +182,7 @@ def main():
                 msg_content = {}
                 msg_content['Subject'] = '[Amazon] %s Price Alert - %s' % (productName,price)
                 msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (nowtime_Str, price, item_page_url)
-                # send_email(msg_content)
+                send_email(msg_content)
                 items.remove(item)
             else:
                 print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
@@ -144,15 +195,10 @@ def main():
             nowtime = datetime.now()
             thisIntervalTime = intervalTimeBetweenCheck + random.randint(0,150)
 
-            # msg_content = {}
-            # msg_content['Subject'] = 'Subject'
-            # msg_content['Content'] = 'This is a content'
-            # send_email(msg_content)
-
             #calculate next triggered time
             dt = datetime.now() + timedelta(seconds=thisIntervalTime)
             print('Sleeping for %d seconds, next time start at %s\n' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
-            time.sleep(20)
+            time.sleep(thisIntervalTime)
         else:
             break
 
