@@ -62,9 +62,11 @@ def checkDayAndSendMail():
     start = datetime(todayDate.year, todayDate.month, todayDate.day)
     end = start + timedelta(days=1)
     global dateIndex
-    print "==>",dateIndex," ",start
+
+    # if change date
     if dateIndex < end :
         dateIndex = end
+        # send mail notifying server still working
         print "==>>>>>>",dateIndex
 
 # read config json from path
@@ -115,8 +117,24 @@ def main():
             item_page_url = urlparse.urljoin(config['amazon-base_url'], item[0])
             print('[#%02d] Checking price for %s (target price: %s)' % ( itemIndex, item[0], item[1]))
 
+            price = random.randint(33400,33600)
+            productName = item[2]
+            # Check price lower then you expected
+            if not price:
+                continue
+            elif price <= item[1]:
+                print('[#%02d] %s\'s price is %s!! Trying to send email.' % (itemIndex,productName,price))
+                msg_content = {}
+                msg_content['Subject'] = '[AmazonJP] %s Price Alert - %s' % (productName,price)
+                msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (nowtime_Str, price, item_page_url)
+                send_email(msg_content)
+                items.remove(item)
+            else:
+                print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
+
             itemIndex += 1
-            print dateIndex
+
+
         if len(items):
             # time interval add some random number for preventing banning
             nowtime = datetime.now()
