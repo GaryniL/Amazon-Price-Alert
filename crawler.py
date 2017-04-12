@@ -56,7 +56,7 @@ def send_email(msg_content):
             s.sendmail(emailinfo['sender'], receiver, msg.as_string())
             print('[Mail]\tMessage has been sent to %s.' % (receiver))
 
-
+# send notified mail once a day.
 def checkDayAndSendMail():
     todayDate = datetime.now()
     start = datetime(todayDate.year, todayDate.month, todayDate.day)
@@ -67,7 +67,11 @@ def checkDayAndSendMail():
     if dateIndex < end :
         dateIndex = end
         # send mail notifying server still working
-        print "==>>>>>>",dateIndex
+        msg_content = {}
+        msg_content['Subject'] = '[Amazon Price Alert] Server working !'
+        msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
+        send_email(msg_content)
+
 
 # read config json from path
 def get_config(config):
@@ -125,9 +129,9 @@ def main():
             elif price <= item[1]:
                 print('[#%02d] %s\'s price is %s!! Trying to send email.' % (itemIndex,productName,price))
                 msg_content = {}
-                msg_content['Subject'] = '[AmazonJP] %s Price Alert - %s' % (productName,price)
+                msg_content['Subject'] = '[Amazon] %s Price Alert - %s' % (productName,price)
                 msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (nowtime_Str, price, item_page_url)
-                send_email(msg_content)
+                # send_email(msg_content)
                 items.remove(item)
             else:
                 print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
