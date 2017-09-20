@@ -1,6 +1,6 @@
 {
     // time between each check (seconds)
-    "default-internal-time":20,
+    "default-internal-time":900,
     "email": {
         "smtp_url": "smtp.gmail.com:587",
         // sender gmail
