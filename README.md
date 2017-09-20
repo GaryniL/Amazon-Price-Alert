@@ -98,9 +98,9 @@ Server will send 3 kinds of mails to receiver
 	Server shutdown mail for reminding you to restart. Most reason of the problem is the server banned by Amazon. You can restart it after 30 minutes.
 	
 2. **Price dropped mail**
-	You can 
+	You will received price alert mail while your target item below the price you set.
 	
-	![](./images/mail-3.png)
+	![](./images/mail-1.png)
 	
 
 ## Limitation
