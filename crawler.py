@@ -107,7 +107,7 @@ def checkDayAndSendMail():
         msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = todayDate.strftime('%Y-%m-%d %H:%M:%S')
-        msg_content['ServerState'] = "Shutdown"
+        msg_content['ServerState'] = "Working"
         msg_content['code'] = 2 # 2 is server state
         send_Notification(msg_content)
 
@@ -153,7 +153,7 @@ def get_price(url, selector):
         # send mail notifying server shutdown
         msg_content = {}
         msg_content['Subject'] = '[Amazon Price Alert] Server shutdown !'
-        msg_content['Content'] = 'Amazon Price Alert shutdown at %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
+        msg_content['Content'] = 'Amazon Price Alert shutdown at %s !' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = ""
         msg_content['ServerState'] = "Shutdown"
