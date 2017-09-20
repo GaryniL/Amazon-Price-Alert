@@ -152,11 +152,11 @@ def get_price(url, selector):
         # be banned, send mail then shut down
         # send mail notifying server shutdown
         msg_content = {}
-        msg_content['Subject'] = '[Amazon Price Alert] Server shutdown !'
-        msg_content['Content'] = 'Amazon Price Alert shutdown at %s !' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        msg_content['Subject'] = '[Amazon Price Alert] Server be banned !'
+        msg_content['Content'] = 'Amazon Price Alert be banned at %s !' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = ""
-        msg_content['ServerState'] = "Shutdown"
+        msg_content['ServerState'] = "Banned"
         msg_content['code'] = 3 # 3 is server shutdown
         send_Notification(msg_content)
         return 0,productName
