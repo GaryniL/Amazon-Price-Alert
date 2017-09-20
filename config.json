@@ -1,13 +1,20 @@
 {
     // time between each check (seconds)
     "default-internal-time":900,
+    // 1 -> Email
+    // 2 -> IFTTT
+    "send_Mode":1,
     "email": {
         "smtp_url": "smtp.gmail.com:587",
         // sender gmail
-        "sender": "sender-mail-address",
-        "sender-password": "password",
-        // receivers emails (can be mutiple)
+        "sender": "MAIL_ACCOUNT_ADDRESS",
+        "sender-password": "MAIL_ACCOUNT_PWD",
+        // receivers emails (full format, can be mutiple)
         "receivers": ["receiver-mail-address-1","receiver-mail-address-2"]
+    },
+    "IFTTT": {
+        "key": "IFTTT_KEY",
+        "eventName": "IFTTT_EVENT_NAME"
     },
     // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
