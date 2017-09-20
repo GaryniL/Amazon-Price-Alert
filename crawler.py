@@ -22,9 +22,44 @@ intervalTimeBetweenCheck = 0
 dateIndex = datetime.now()
 emailinfo = {}
 
+IFTTT_Key = ""
+IFTTT_EventName = ""
+
 # msg_content format
 # msg_content['Subject'] = 'Subject'
 # msg_content['Content'] = 'This is a content'
+
+def send_Notification(msg_content):
+    global send_Mode
+    if send_Mode == 1:
+        send_email(msg_content)
+    elif send_Mode == 2:
+        IFTTT_alert(msg_content)
+
+def IFTTT_alert(msg_content):
+    global IFTTT_EventName
+    global IFTTT_Key
+
+    requestBody = {}
+
+    # 1 is success
+    # 2 is server working msg
+    # 3 is server shutdown
+    if msg_content['code'] == 1:
+        requestBody["value1"] = msg_content['Product']
+        requestBody["value2"] = msg_content['Price']
+        requestBody["value3"] = msg_content['URL']
+
+    elif msg_content['code'] == 2:
+        requestBody["value1"] = msg_content['Content']
+
+    elif msg_content['code'] == 3:
+        requestBody["value1"] = msg_content['Content']
+
+    url = "https://maker.ifttt.com/trigger/%s/with/key/%s" % (IFTTT_EventName,IFTTT_Key)
+    requests.post(url, data=requestBody) 
+    print "IFTTT post success  ",url
+
 def send_email(msg_content):
     global emailinfo
 
@@ -70,7 +105,11 @@ def checkDayAndSendMail():
         msg_content = {}
         msg_content['Subject'] = '[Amazon Price Alert] Server working !'
         msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
-        send_email(msg_content)
+        msg_content['Price'] = ""
+        msg_content['Time'] = todayDate.strftime('%Y-%m-%d %H:%M:%S')
+        msg_content['ServerState'] = "Shutdown"
+        msg_content['code'] = 2 # 2 is server state
+        send_Notification(msg_content)
 
 
 
@@ -115,7 +154,11 @@ def get_price(url, selector):
         msg_content = {}
         msg_content['Subject'] = '[Amazon Price Alert] Server shutdown !'
         msg_content['Content'] = 'Amazon Price Alert shutdown at %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
-        send_email(msg_content)
+        msg_content['Price'] = ""
+        msg_content['Time'] = ""
+        msg_content['ServerState'] = "Shutdown"
+        msg_content['code'] = 3 # 3 is server shutdown
+        send_Notification(msg_content)
         return 0,productName
 
 
@@ -145,6 +188,7 @@ def main():
     intervalTimeBetweenCheck = args.poll_interval
     global dateIndex
     global emailinfo
+    global IFTTT_Key,IFTTT_EventName,send_Mode
 
     dateIndex = datetime.now()
 
@@ -152,6 +196,9 @@ def main():
     config = get_config(args.config)
     emailinfo = config['email']
     intervalTimeBetweenCheck = config['default-internal-time']
+    send_Mode = config['send_Mode']
+    IFTTT_Key = config['IFTTT']['key']
+    IFTTT_EventName = config['IFTTT']['eventName']
 
     #get all items to parse
     items = config['item-to-parse']
@@ -183,7 +230,12 @@ def main():
                 msg_content = {}
                 msg_content['Subject'] = '[Amazon] %s Price Alert - %s' % (productName,price)
                 msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (nowtime_Str, price, item_page_url)
-                send_email(msg_content)
+                msg_content['Price'] = price
+                msg_content['URL'] = item_page_url
+                msg_content['Product'] = productName
+                msg_content['ServerState'] = ""
+                msg_content['code'] = 1 # 2 is server state
+                send_Notification(msg_content)
                 items.remove(item)
             else:
                 print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
