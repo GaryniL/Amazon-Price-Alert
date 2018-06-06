@@ -3,6 +3,7 @@
     "default-internal-time":900,
     // 1 -> Email
     // 2 -> IFTTT
+    // 3 -> Telegram
     "send_Mode":1,
     "email": {
         "smtp_url": "smtp.gmail.com:587",
@@ -15,6 +16,10 @@
     "IFTTT": {
         "key": "IFTTT_KEY",
         "eventName": "IFTTT_EVENT_NAME"
+    },
+    "Telegram": {
+        "botToken": "TOKEN",
+        "chatId": "CHAT_ID"
     },
     // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
