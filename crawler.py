@@ -10,6 +10,7 @@ import argparse
 import urlparse
 import datetime,random
 import UserAgent
+import telegram
 
 from copy import copy
 from lxml import html
@@ -25,6 +26,8 @@ emailinfo = {}
 IFTTT_Key = ""
 IFTTT_EventName = ""
 
+
+
 # msg_content format
 # msg_content['Subject'] = 'Subject'
 # msg_content['Content'] = 'This is a content'
@@ -35,6 +38,27 @@ def send_Notification(msg_content):
         send_email(msg_content)
     elif send_Mode == 2:
         IFTTT_alert(msg_content)
+    elif send_Mode == 3:
+        telegram_alert(msg_content)
+
+def telegram_alert(msg_content):
+    global botToken
+    global chatId
+
+    # 1 is success
+    # 2 is server working msg
+    # 3 is server shutdown
+    if msg_content['code'] == 1:
+        message = "Congratulations! " + str(msg_content['Price']) +"  "+ msg_content['Product'] + " " + " " + msg_content['URL']
+
+    elif msg_content['code'] == 2:
+        message = '🔴' + msg_content['Content']
+
+    elif msg_content['code'] == 3:
+        message = msg_content['Content']
+
+    bot.send_message(chat_id=chatId, text=message)
+    print "Mesage posted to telegram:",chatId
 
 def IFTTT_alert(msg_content):
     global IFTTT_EventName
@@ -189,7 +213,10 @@ def main():
     global dateIndex
     global emailinfo
     global IFTTT_Key,IFTTT_EventName,send_Mode
+    global botToken, chatId
+    global bot 
 
+    
     dateIndex = datetime.now()
 
     # get config from path
@@ -199,6 +226,12 @@ def main():
     send_Mode = config['send_Mode']
     IFTTT_Key = config['IFTTT']['key']
     IFTTT_EventName = config['IFTTT']['eventName']
+    botToken = config['Telegram']['botToken']
+    chatId = config['Telegram']['chatId']
+
+    #initialize telegram bot
+    if send_Mode == 3:
+        bot = telegram.Bot(botToken)
 
     #get all items to parse
     items = config['item-to-parse']
@@ -239,7 +272,6 @@ def main():
                 items.remove(item)
             else:
                 print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
-
             itemIndex += 1
 
 
