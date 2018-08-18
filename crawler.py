@@ -11,6 +11,7 @@ import urlparse
 import datetime,random
 import UserAgent
 import telegram
+import boto3
 
 from copy import copy
 from lxml import html
@@ -40,6 +41,27 @@ def send_Notification(msg_content):
         IFTTT_alert(msg_content)
     elif send_Mode == 3:
         telegram_alert(msg_content)
+    elif send_Mode == 4:
+        AWS_SNS_alert(msg_content)
+
+def AWS_SNS_alert(msg_content):
+    global aws_access_key_id, aws_secret_access_key, region_name, PhoneNumber
+
+    text = msg_content['Content']
+
+    # Create an SNS client
+    client = boto3.client(
+        "sns",
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region_name
+    )
+
+    # Send SMS message.
+    client.publish(
+        PhoneNumber=PhoneNumber,
+        Message=text
+    )
 
 def telegram_alert(msg_content):
     global botToken
@@ -127,8 +149,8 @@ def checkDayAndSendMail():
         dateIndex = end
         # send mail notifying server still working
         msg_content = {}
-        msg_content['Subject'] = '[Amazon Price Alert] Server working !'
-        msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
+        msg_content['Subject'] = '[Amazon Price Alert] Server working!'
+        msg_content['Content'] = 'Amazon Price Alert server started at %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = todayDate.strftime('%Y-%m-%d %H:%M:%S')
         msg_content['ServerState'] = "Working"
@@ -176,8 +198,8 @@ def get_price(url, selector):
         # be banned, send mail then shut down
         # send mail notifying server shutdown
         msg_content = {}
-        msg_content['Subject'] = '[Amazon Price Alert] Server be banned !'
-        msg_content['Content'] = 'Amazon Price Alert be banned at %s !' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        msg_content['Subject'] = '[Amazon Price Alert] Server is banned!'
+        msg_content['Content'] = 'Amazon Price Alert was banned at %s !' % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = ""
         msg_content['ServerState'] = "Banned"
@@ -215,6 +237,7 @@ def main():
     global IFTTT_Key,IFTTT_EventName,send_Mode
     global botToken, chatId
     global bot 
+    global aws_access_key_id, aws_secret_access_key, region_name, PhoneNumber
 
     
     dateIndex = datetime.now()
@@ -228,6 +251,11 @@ def main():
     IFTTT_EventName = config['IFTTT']['eventName']
     botToken = config['Telegram']['botToken']
     chatId = config['Telegram']['chatId']
+
+    aws_access_key_id = config['AWS SNS']['aws_access_key_id']
+    aws_secret_access_key = config['AWS SNS']['aws_secret_access_key']
+    region_name = config['AWS SNS']['region_name']
+    PhoneNumber = config['AWS SNS']['PhoneNumber']
 
     #initialize telegram bot
     if send_Mode == 3:
@@ -282,7 +310,7 @@ def main():
 
             #calculate next triggered time
             dt = datetime.now() + timedelta(seconds=thisIntervalTime)
-            print('Sleeping for %d seconds, next time start at %s\n' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
+            print('Sleeping for %d seconds, next checking at %s\n' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
             time.sleep(thisIntervalTime)
         else:
             break

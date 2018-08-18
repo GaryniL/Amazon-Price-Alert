@@ -21,6 +21,14 @@
         "botToken": "TOKEN",
         "chatId": "CHAT_ID"
     },
+    "AWS SNS": {
+        "aws_access_key_id":"KEY_ID",
+        "aws_secret_access_key":"ACCESS_KEY",
+        "region_name":"AWS_REGION",
+        // AWS Region e.g. us-east-1
+        "PhoneNumber":"PhoneNumber",
+        // e.g. +447555555555 (use country code and include +)
+    },
     // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
     "xpath_selector" : {
