@@ -8,9 +8,10 @@ import requests
 import smtplib
 import argparse
 import urlparse
-import datetime,random
+import datetime, random
 import UserAgent
-import telegram
+# import telegram
+from slackclient import SlackClient
 
 from copy import copy
 from lxml import html
@@ -27,7 +28,6 @@ IFTTT_Key = ""
 IFTTT_EventName = ""
 
 
-
 # msg_content format
 # msg_content['Subject'] = 'Subject'
 # msg_content['Content'] = 'This is a content'
@@ -40,6 +40,9 @@ def send_Notification(msg_content):
         IFTTT_alert(msg_content)
     elif send_Mode == 3:
         telegram_alert(msg_content)
+    elif send_Mode == 4:
+        Slack_alert(msg_content)
+
 
 def telegram_alert(msg_content):
     global botToken
@@ -49,7 +52,8 @@ def telegram_alert(msg_content):
     # 2 is server working msg
     # 3 is server shutdown
     if msg_content['code'] == 1:
-        message = "Congratulations! " + str(msg_content['Price']) +"  "+ msg_content['Product'] + " " + " " + msg_content['URL']
+        message = "Congratulations! " + str(msg_content['Price']) + "  " + msg_content['Product'] + " " + " " + \
+                  msg_content['URL']
 
     elif msg_content['code'] == 2:
         message = '🔴' + msg_content['Content']
@@ -58,7 +62,28 @@ def telegram_alert(msg_content):
         message = msg_content['Content']
 
     bot.send_message(chat_id=chatId, text=message)
-    print "Mesage posted to telegram:",chatId
+    print("Mesage posted to telegram:", chatId)
+
+
+def Slack_alert(msg_content):
+    global channelName
+
+    # 1 is success
+    # 2 is server working msg
+    # 3 is server shutdown
+
+    if msg_content['code'] == 1:
+        message = "Congratulations! " + str(msg_content['Price']) + "  " + msg_content['Product'] + " " + " " + \
+                  msg_content['URL']
+
+    elif msg_content['code'] == 2:
+        message = '🔴' + msg_content['Content']
+
+    elif msg_content['code'] == 3:
+        message = msg_content['Content']
+    sc.api_call('chat.postMessage', channel='#' + str(channelName), text=message, username='zen',icon_emoji=':robot_face:')
+    print("Message posted to Slack:", channelName)
+
 
 def IFTTT_alert(msg_content):
     global IFTTT_EventName
@@ -80,9 +105,10 @@ def IFTTT_alert(msg_content):
     elif msg_content['code'] == 3:
         requestBody["value1"] = msg_content['Content']
 
-    url = "https://maker.ifttt.com/trigger/%s/with/key/%s" % (IFTTT_EventName,IFTTT_Key)
-    requests.post(url, data=requestBody) 
-    print "IFTTT post success  ",url
+    url = "https://maker.ifttt.com/trigger/%s/with/key/%s" % (IFTTT_EventName, IFTTT_Key)
+    requests.post(url, data=requestBody)
+    print("IFTTT post success  ", url)
+
 
 def send_email(msg_content):
     global emailinfo
@@ -95,25 +121,25 @@ def send_email(msg_content):
         s.login(emailinfo['sender'], emailinfo['sender-password'])
     except smtplib.SMTPAuthenticationError:
         # Log in failed
-        print smtplib.SMTPAuthenticationError
+        print(smtplib.SMTPAuthenticationError)
         print('[Mail]\tFailed to login')
     else:
         # Log in successfully
         print('[Mail]\tLogged in! Composing message..')
 
         for receiver in emailinfo['receivers']:
-
             msg = MIMEMultipart('alternative')
             msg['Subject'] = msg_content['Subject']
             msg['From'] = emailinfo['sender']
             msg['To'] = receiver
-            
+
             text = msg_content['Content']
 
             part = MIMEText(text, 'plain')
             msg.attach(part)
             s.sendmail(emailinfo['sender'], receiver, msg.as_string())
             print('[Mail]\tMessage has been sent to %s.' % (receiver))
+
 
 # send notified mail once a day.
 def checkDayAndSendMail():
@@ -123,36 +149,32 @@ def checkDayAndSendMail():
     global dateIndex
 
     # if change date
-    if dateIndex < end :
+    if dateIndex < end:
         dateIndex = end
         # send mail notifying server still working
         msg_content = {}
         msg_content['Subject'] = '[Amazon Price Alert] Server working !'
-        msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (todayDate.strftime('%Y-%m-%d %H:%M:%S'))
+        msg_content['Content'] = 'Amazon Price Alert still working until %s !' % (
+        todayDate.strftime('%Y-%m-%d %H:%M:%S'))
         msg_content['Price'] = ""
         msg_content['Time'] = todayDate.strftime('%Y-%m-%d %H:%M:%S')
         msg_content['ServerState'] = "Working"
-        msg_content['code'] = 2 # 2 is server state
+        msg_content['code'] = 2  # 2 is server state
         send_Notification(msg_content)
 
 
-
-
 def get_price(url, selector):
-    
     # set random user agent prevent banning
     r = requests.get(url, headers={
         'User-Agent':
             ua.random(),
-        'Accept-Language':    'zh-tw',
-        'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Connection':'keep-alive',
-        'Accept-Encoding':'gzip, deflate'
+        'Accept-Language': 'zh-tw',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Connection': 'keep-alive',
+        'Accept-Encoding': 'gzip, deflate'
     })
     r.raise_for_status()
     tree = html.fromstring(r.text)
-
-    
 
     # find product name
     productName = ""
@@ -160,7 +182,7 @@ def get_price(url, selector):
     if not productName_results:
         # raise Exception("Product Name does not exist")
         print('Didn\'t find the \'product-name\' element, trying again later...')
-    else :
+    else:
         productName = productName_results[0].text
         productName = productName.strip()
 
@@ -168,11 +190,11 @@ def get_price(url, selector):
     try:
         # extract the price from the string
         price_string = re.findall('\d+.\d+', tree.xpath(selector['price'])[0].text)[0]
-        return float(price_string.replace(',', '')),productName
-    
+        return float(price_string.replace(',', '')), productName
+
     except IndexError, TypeError:
         print('Didn\'t find the \'price\' element, trying again later...')
-        
+
         # be banned, send mail then shut down
         # send mail notifying server shutdown
         msg_content = {}
@@ -181,11 +203,9 @@ def get_price(url, selector):
         msg_content['Price'] = ""
         msg_content['Time'] = ""
         msg_content['ServerState'] = "Banned"
-        msg_content['code'] = 3 # 3 is server shutdown
+        msg_content['code'] = 3  # 3 is server shutdown
         send_Notification(msg_content)
-        return 0,productName
-
-
+        return 0, productName
 
 
 # read config json from path
@@ -194,6 +214,7 @@ def get_config(config):
         # handle '// ' to json string
         input_str = re.sub(r'// .*\n', '\n', f.read())
         return json.loads(input_str)
+
 
 # add some arguments 
 def parse_args():
@@ -206,17 +227,20 @@ def parse_args():
 
     return parser.parse_args()
 
+
 def main():
-    #set up arguments
+    # set up arguments
     args = parse_args()
     intervalTimeBetweenCheck = args.poll_interval
     global dateIndex
     global emailinfo
-    global IFTTT_Key,IFTTT_EventName,send_Mode
+    global IFTTT_Key, IFTTT_EventName, send_Mode
     global botToken, chatId
-    global bot 
+    global bot
+    global channelName
+    global msgToken
+    global sc
 
-    
     dateIndex = datetime.now()
 
     # get config from path
@@ -228,18 +252,23 @@ def main():
     IFTTT_EventName = config['IFTTT']['eventName']
     botToken = config['Telegram']['botToken']
     chatId = config['Telegram']['chatId']
+    msgToken = config['Slack']['msgToken']
+    channelName = config['Slack']['channelName']
 
-    #initialize telegram bot
+    # initialize telegram bot
     if send_Mode == 3:
         bot = telegram.Bot(botToken)
 
-    #get all items to parse
+    if send_Mode == 4:
+        sc = SlackClient(msgToken)
+
+    # get all items to parse
     items = config['item-to-parse']
 
     while True and len(items):
         nowtime = datetime.now()
         nowtime_Str = nowtime.strftime('%Y-%m-%d %H:%M:%S')
-        print ('[%s] Start Checking' % (nowtime_Str))
+        print('[%s] Start Checking' % (nowtime_Str))
 
         # send mail notify system working everyday
         checkDayAndSendMail()
@@ -248,41 +277,41 @@ def main():
         for item in copy(items):
             # url to parse
             item_page_url = urlparse.urljoin(config['amazon-base_url'], item[0])
-            print('[#%02d] Checking price for %s (target price: %s)' % ( itemIndex, item[0], item[1]))
+            print('[#%02d] Checking price for %s (target price: %s)' % (itemIndex, item[0], item[1]))
 
             # get price and product name
             productName = item[2]
-            price,productName = get_price(item_page_url, config['xpath_selector'])
-            
-            
+            price, productName = get_price(item_page_url, config['xpath_selector'])
+
             # Check price lower then you expected
             if not price:
                 continue
             elif price <= item[1]:
-                print('[#%02d] %s\'s price is %s!! Trying to send email.' % (itemIndex,productName,price))
+                print('[#%02d] %s\'s price is %s!! Trying to send email.' % (itemIndex, productName, price))
                 msg_content = {}
-                msg_content['Subject'] = '[Amazon] %s Price Alert - %s' % (productName,price)
-                msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (nowtime_Str, price, item_page_url)
+                msg_content['Subject'] = '[Amazon] %s Price Alert - %s' % (productName, price)
+                msg_content['Content'] = '[%s]\nThe price is currently %s !!\nURL to salepage: %s' % (
+                nowtime_Str, price, item_page_url)
                 msg_content['Price'] = price
                 msg_content['URL'] = item_page_url
                 msg_content['Product'] = productName
                 msg_content['ServerState'] = ""
-                msg_content['code'] = 1 # 2 is server state
+                msg_content['code'] = 1  # 2 is server state
                 send_Notification(msg_content)
                 items.remove(item)
             else:
-                print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex,productName,price))
+                print('[#%02d] %s\'s price is %s. Ignoring...' % (itemIndex, productName, price))
             itemIndex += 1
-
 
         if len(items):
             # time interval add some random number for preventing banning
             nowtime = datetime.now()
-            thisIntervalTime = intervalTimeBetweenCheck + random.randint(0,150)
+            thisIntervalTime = intervalTimeBetweenCheck + random.randint(0, 150)
 
-            #calculate next triggered time
+            # calculate next triggered time
             dt = datetime.now() + timedelta(seconds=thisIntervalTime)
-            print('Sleeping for %d seconds, next time start at %s\n' % (thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
+            print('Sleeping for %d seconds, next time start at %s\n' % (
+            thisIntervalTime, dt.strftime('%Y-%m-%d %H:%M:%S')))
             time.sleep(thisIntervalTime)
         else:
             break
