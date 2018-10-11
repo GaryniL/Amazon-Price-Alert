@@ -4,7 +4,7 @@
     // 1 -> Email
     // 2 -> IFTTT
     // 3 -> Telegram
-    "send_Mode":1,
+    "send_Mode":4,
     "email": {
         "smtp_url": "smtp.gmail.com:587",
         // sender gmail
@@ -20,6 +20,10 @@
     "Telegram": {
         "botToken": "TOKEN",
         "chatId": "CHAT_ID"
+    },
+    "Slack":{
+        "msgToken": "SLACK_API_TOKEN",
+        "channelName": "CHANNEL_NAME"
     },
     // amazon base url
     "amazon-base_url": "https://www.amazon.jp/dp/",
