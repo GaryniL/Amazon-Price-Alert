@@ -89,7 +89,7 @@ def send_email(msg_content):
 
     try:
         # Try to login smtp server
-        s = smtplib.SMTP("smtp.gmail.com:587")
+        s = smtplib.SMTP(emailinfo['smtp_url'])
         s.ehlo()
         s.starttls()
         s.login(emailinfo['sender'], emailinfo['sender-password'])
